@@ -1,3 +1,16 @@
+from flask import Flask, request, send_from_directory
+import pandas as pd
+from datetime import datetime
+import os
+
+app = Flask(__name__)
+
+# Homepage → index.html uit templates-map
+@app.route("/")
+def index():
+    return send_from_directory("templates", "index.html")
+
+# KM opslaan
 @app.route("/api/km", methods=["POST"])
 def save_km():
     try:
@@ -8,6 +21,7 @@ def save_km():
             print("Geen JSON ontvangen!")
             return {"status": "error", "message": "Geen JSON"}, 400
 
+        # Excel-bestand maken
         df = pd.DataFrame([data])
         filename = f"rit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         filepath = os.path.join("exports", filename)
@@ -21,3 +35,7 @@ def save_km():
     except Exception as e:
         print("Fout in save_km:", str(e))
         return {"status": "error", "message": str(e)}, 500
+
+# Render start gunicorn → dit is nodig voor lokaal testen
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
