@@ -11,17 +11,8 @@
 
         label { font-size: 12px; margin-top: 15px; display: block; }
 
-        .field-line {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 6px;
-        }
-
-        .field-wrapper {
-            position: relative;
-            flex: 1;
-        }
+        .field-line { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+        .field-wrapper { position: relative; flex: 1; }
 
         input {
             width: 100%;
@@ -65,7 +56,6 @@
         .quick-btn { flex: 1; padding: 8px; background: #333; color: white; border: none; border-radius: 8px; font-size: 10px; }
 
         .submit-row { display: flex; gap: 10px; margin-top: 25px; }
-
         .submit-btn, .clear-btn {
             flex: 1;
             padding: 12px;
@@ -76,12 +66,7 @@
             border-radius: 8px;
         }
 
-        .bottom-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
+        .bottom-row { display: flex; gap: 10px; margin-top: 30px; }
         .bottom-btn {
             flex: 1;
             padding: 12px;
@@ -168,7 +153,7 @@
 </form>
 
 <div class="bottom-row">
-    <button class="bottom-btn" onclick="window.location.href='/download-db'">Download database</button>
+    <button class="bottom-btn" onclick="downloadDb()">Download database</button>
     <button class="bottom-btn" onclick="window.location.href='/overzicht'">Overzicht</button>
 </div>
 
@@ -185,7 +170,7 @@ async function loadLastKm() {
 }
 loadLastKm();
 
-// Locatie invullen (alleen VAN, VIA, NAAR)
+// Locatie invullen
 function fillLocation(fieldId) {
     if (!navigator.geolocation) return alert("Locatie niet beschikbaar");
 
@@ -274,6 +259,20 @@ document.getElementById("kmForm").addEventListener("submit", async (e) => {
 
     alert(response.ok ? "Rit opgeslagen!" : "Fout bij opslaan.");
 });
+
+// ⭐ DOWNLOAD MET DATUM
+async function downloadDb() {
+    const today = new Date().toISOString().split("T")[0];
+    const filename = `km-${today}.json`;
+
+    const res = await fetch("/download-db");
+    const blob = await res.blob();
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
 </script>
 
 </body>
