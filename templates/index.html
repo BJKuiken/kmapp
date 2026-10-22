@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KM-registratie</title>
     <style>
-        body { font-family: Arial; margin: 0; padding: 20px; background: #CFA94A; }
-        h2 { text-align: center; margin-bottom: 20px; }
+        body { font-family: Arial; margin: 0; padding: 20px; background: #CFA94A; font-size: 12px; }
+        h2 { text-align: center; margin-bottom: 20px; font-size: 16px; }
         form { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
 
-        label { font-size: 16px; margin-top: 15px; display: block; }
+        label { font-size: 12px; margin-top: 15px; display: block; }
 
         .field-line {
             display: flex;
@@ -25,8 +25,8 @@
 
         input {
             width: 100%;
-            padding: 14px;
-            font-size: 18px;
+            padding: 10px;
+            font-size: 14px;
             border: 1px solid #ccc;
             border-radius: 8px;
         }
@@ -38,53 +38,65 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 16px;
             cursor: pointer;
             color: #333;
         }
 
         .quick-small {
-            padding: 10px 14px;
+            padding: 6px 10px;
             background: #333;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 10px;
             flex: 0 0 auto;
         }
 
         .km-plus {
-            width: 80px;
-            padding: 14px;
-            font-size: 18px;
+            width: 60px;
+            padding: 10px;
+            font-size: 14px;
             border: 1px solid #ccc;
             border-radius: 8px;
         }
 
         .btn-row { display: flex; gap: 10px; margin-top: 10px; }
-        .quick-btn { flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 8px; font-size: 14px; }
+        .quick-btn { flex: 1; padding: 8px; background: #333; color: white; border: none; border-radius: 8px; font-size: 10px; }
 
         .submit-row { display: flex; gap: 10px; margin-top: 25px; }
 
         .submit-btn, .clear-btn {
             flex: 1;
-            padding: 16px;
+            padding: 12px;
             background: #333;
             color: white;
-            font-size: 18px;
+            font-size: 14px;
             border: none;
             border-radius: 8px;
         }
 
-        .download-btn {
+        .bottom-row {
+            display: flex;
+            gap: 10px;
             margin-top: 30px;
-            padding: 16px;
-            width: 100%;
+        }
+
+        .bottom-btn {
+            flex: 1;
+            padding: 12px;
             background: #333;
             color: white;
-            font-size: 18px;
+            font-size: 14px;
             border: none;
             border-radius: 8px;
+        }
+
+        .error {
+            color: darkred;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -94,22 +106,20 @@
 
 <form id="kmForm">
 
-    <!-- DATUM -->
     <label>Datum</label>
     <input type="date" id="datum" name="datum" required>
 
-    <!-- BEGINSTAND -->
     <label>Beginstand (km)</label>
     <input type="number" id="begin" name="begin" required>
 
-    <!-- EINDSTAND + KM+ -->
     <label>Eindstand (km)</label>
     <div class="field-line">
         <input type="number" id="eind" name="eind" required>
         <input type="number" id="pluskm" class="km-plus" placeholder="+km">
     </div>
 
-    <!-- VAN -->
+    <div id="kmError" class="error">Eindstand kan niet lager zijn dan beginstand.</div>
+
     <label>Van</label>
     <div class="field-line">
         <div class="field-wrapper">
@@ -119,7 +129,6 @@
         <button type="button" class="quick-small" onclick="document.getElementById('van').value='Zwartsluis'">Zwartsluis</button>
     </div>
 
-    <!-- VIA -->
     <label>Via</label>
     <div class="field-line">
         <div class="field-wrapper">
@@ -133,7 +142,6 @@
         <button type="button" class="quick-btn" onclick="setVia('Heerde')">Heerde</button>
     </div>
 
-    <!-- NAAR -->
     <label>Naar</label>
     <div class="field-line">
         <div class="field-wrapper">
@@ -143,7 +151,6 @@
         <button type="button" class="quick-small" onclick="document.getElementById('naar').value='Zwartsluis'">Zwartsluis</button>
     </div>
 
-    <!-- REDEN -->
     <label>Reden / Bestemming</label>
     <input type="text" id="reden" name="reden" required>
 
@@ -153,7 +160,6 @@
         <button type="button" class="quick-btn" onclick="setReason('Privé')">Privé</button>
     </div>
 
-    <!-- OPSLAAN + LEEGMAKEN -->
     <div class="submit-row">
         <button type="submit" class="submit-btn">Opslaan</button>
         <button type="button" class="clear-btn" onclick="clearForm()">Leegmaken</button>
@@ -161,9 +167,10 @@
 
 </form>
 
-<button class="download-btn" onclick="window.location.href='/download-db'">
-    Download database (km.db)
-</button>
+<div class="bottom-row">
+    <button class="bottom-btn" onclick="window.location.href='/download-db'">Download database</button>
+    <button class="bottom-btn" onclick="window.location.href='/overzicht'">Overzicht</button>
+</div>
 
 <script>
 // Datum automatisch op vandaag
@@ -220,6 +227,23 @@ document.getElementById("pluskm").addEventListener("input", () => {
     }
 });
 
+// KM-validatie
+function validateKm() {
+    const begin = Number(document.getElementById("begin").value);
+    const eind = Number(document.getElementById("eind").value);
+
+    if (!isNaN(begin) && !isNaN(eind) && eind < begin) {
+        document.getElementById("kmError").style.display = "block";
+        return false;
+    }
+
+    document.getElementById("kmError").style.display = "none";
+    return true;
+}
+
+document.getElementById("eind").addEventListener("blur", validateKm);
+document.getElementById("eind").addEventListener("input", validateKm);
+
 // Formulier leegmaken
 function clearForm() {
     document.getElementById("datum").value = new Date().toISOString().split("T")[0];
@@ -230,11 +254,15 @@ function clearForm() {
     document.getElementById("pluskm").value = "";
     document.getElementById("eind").value = "";
     loadLastKm();
+    document.getElementById("kmError").style.display = "none";
 }
 
 // Opslaan
 document.getElementById("kmForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    if (!validateKm()) return;
+
     const data = Object.fromEntries(new FormData(e.target));
 
     const apiUrl = window.location.origin + "/api/km";
