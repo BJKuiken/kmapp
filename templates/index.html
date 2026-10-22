@@ -123,10 +123,10 @@
     <label>Van</label>
     <div class="field-line">
         <div class="field-wrapper">
-            <input type="text" id="van" name="van" required>
+            <input type="text" id="van" name="van" value="Zwartsluis, Otterbeek 58" required>
             <button type="button" class="star-btn" onclick="fillLocation('van')">⭐</button>
         </div>
-        <button type="button" class="quick-small" onclick="document.getElementById('van').value='Zwartsluis'">Zwartsluis</button>
+        <button type="button" class="quick-small" onclick="document.getElementById('van').value='Zwartsluis, Otterbeek 58'">Zwartsluis</button>
     </div>
 
     <label>Via</label>
@@ -145,10 +145,10 @@
     <label>Naar</label>
     <div class="field-line">
         <div class="field-wrapper">
-            <input type="text" id="naar" name="naar" required>
+            <input type="text" id="naar" name="naar" value="Zwartsluis, Otterbeek 58" required>
             <button type="button" class="star-btn" onclick="fillLocation('naar')">⭐</button>
         </div>
-        <button type="button" class="quick-small" onclick="document.getElementById('naar').value='Zwartsluis'">Zwartsluis</button>
+        <button type="button" class="quick-small" onclick="document.getElementById('naar').value='Zwartsluis, Otterbeek 58'">Zwartsluis</button>
     </div>
 
     <label>Reden / Bestemming</label>
@@ -247,9 +247,9 @@ document.getElementById("eind").addEventListener("input", validateKm);
 // Formulier leegmaken
 function clearForm() {
     document.getElementById("datum").value = new Date().toISOString().split("T")[0];
-    document.getElementById("van").value = "";
+    document.getElementById("van").value = "Zwartsluis, Otterbeek 58";
     document.getElementById("via").value = "";
-    document.getElementById("naar").value = "";
+    document.getElementById("naar").value = "Zwartsluis, Otterbeek 58";
     document.getElementById("reden").value = "";
     document.getElementById("pluskm").value = "";
     document.getElementById("eind").value = "";
