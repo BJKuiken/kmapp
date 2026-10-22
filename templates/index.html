@@ -36,6 +36,21 @@
             color: #333;
         }
 
+        /* Extra veld rechts van eindstand */
+        .km-plus-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .km-plus {
+            width: 80px;
+            padding: 14px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
         .btn-row { display: flex; gap: 10px; margin-top: 10px; }
         .quick-btn { flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 8px; font-size: 14px; }
 
@@ -78,7 +93,14 @@
     </div>
 
     <label>Eindstand (km)</label>
-    <input type="number" id="eind" name="eind" required>
+    <div class="km-plus-wrapper">
+        <div class="field-wrapper" style="flex:1;">
+            <input type="number" id="eind" name="eind" required>
+            <button type="button" class="star-btn" onclick="fillLocation('eind')">⭐</button>
+        </div>
+
+        <input type="number" id="pluskm" class="km-plus" placeholder="+km">
+    </div>
 
     <label>Van</label>
     <div class="field-wrapper">
@@ -162,7 +184,7 @@ function fillLocation(fieldId) {
     );
 }
 
-// Via-knoppen vullen + eindstand berekenen
+// ⭐ Via-knoppen vullen + eindstand berekenen
 function setVia(text) {
     document.getElementById("via").value = text;
     const begin = Number(document.getElementById("begin").value);
@@ -171,12 +193,22 @@ function setVia(text) {
     }
 }
 
-// Reden-knoppen vullen
+// ⭐ Reden-knoppen vullen
 function setReason(text) {
     document.getElementById("reden").value = text;
 }
 
-// Formulier versturen
+// ⭐ Automatisch eindstand berekenen bij +km
+document.getElementById("pluskm").addEventListener("input", () => {
+    const begin = Number(document.getElementById("begin").value);
+    const plus = Number(document.getElementById("pluskm").value);
+
+    if (!isNaN(begin) && !isNaN(plus)) {
+        document.getElementById("eind").value = begin + plus;
+    }
+});
+
+// ⭐ Formulier versturen
 document.getElementById("kmForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
