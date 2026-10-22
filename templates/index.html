@@ -13,6 +13,7 @@
         .btn-row { display: flex; gap: 10px; margin-top: 10px; }
         .quick-btn { flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 8px; font-size: 14px; }
         button[type="submit"] { width: 100%; padding: 16px; margin-top: 25px; background: #333; color: white; font-size: 18px; border: none; border-radius: 8px; }
+        .download-btn { margin-top: 30px; padding: 16px; width: 100%; background: #333; color: white; font-size: 18px; border: none; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -20,6 +21,7 @@
 <h2>KM-registratie</h2>
 
 <form id="kmForm">
+
     <label>Datum</label>
     <input type="date" id="datum" name="datum" required>
 
@@ -33,14 +35,105 @@
     <input type="text" id="van" name="van" value="Zwartsluis" required>
 
     <label>Via</label>
-    <input type="text" id="via" name="via" value="" placeholder="Via (optioneel)">
+    <input type="text" id="via" name="via" placeholder="Via (optioneel)">
 
     <div class="btn-row">
         <button type="button" class="quick-btn" onclick="setVia('Emmeloord')">Emmeloord</button>
         <button type="button" class="quick-btn" onclick="setVia('Heerde')">Heerde</button>
+        <button type="button" class="quick-btn" onclick="getLocation()">Huidige locatie</button>
     </div>
 
     <label>Naar</label>
     <input type="text" id="naar" name="naar" value="Zwartsluis" required>
 
     <label>Reden / Bestemming</label>
+    <input type="text" id="reden" name="reden" required>
+
+    <div class="btn-row">
+        <button type="button" class="quick-btn" onclick="setReason('Tolsma Grisnich')">Tolsma Grisnich</button>
+        <button type="button" class="quick-btn" onclick="setReason('Heideveld')">Heideveld</button>
+        <button type="button" class="quick-btn" onclick="setReason('Privé')">Privé</button>
+    </div>
+
+    <button type="submit">Opslaan</button>
+</form>
+
+<!-- DOWNLOAD DATABASE KNOP (1x) -->
+<button class="download-btn" onclick="window.location.href='/download-db'">
+    Download database (km.db)
+</button>
+
+<script>
+// Datum automatisch op vandaag
+document.getElementById("datum").value = new Date().toISOString().split("T")[0];
+
+// Via-knoppen vullen + eindstand berekenen
+function setVia(text) {
+    document.getElementById("via").value = text;
+
+    const begin = Number(document.getElementById("begin").value);
+    if (!isNaN(begin) && text === "Emmeloord") {
+        document.getElementById("eind").value = begin + 50;
+    }
+}
+
+// Reden-knoppen vullen
+function setReason(text) {
+    document.getElementById("reden").value = text;
+}
+
+// Locatie ophalen
+function getLocation() {
+    if (!navigator.geolocation) {
+        alert("Locatie niet beschikbaar");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error);
+}
+
+function success(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    // Locatie als coördinaten
+    document.getElementById("via").value = `${lat}, ${lon}`;
+
+    // Optioneel: plaatsnaam ophalen
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        .then(r => r.json())
+        .then(data => {
+            const plaats =
+                data.address.city ||
+                data.address.town ||
+                data.address.village ||
+                data.address.hamlet ||
+                `${lat}, ${lon}`;
+
+            document.getElementById("via").value = plaats;
+        });
+}
+
+function error() {
+    alert("Kon locatie niet ophalen");
+}
+
+// Formulier versturen
+document.getElementById("kmForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+
+    const apiUrl = window.location.origin + "/api/km";
+
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+
+    alert(response.ok ? "Rit opgeslagen!" : "Fout bij opslaan.");
+});
+</script>
+
+</body>
+</html>
