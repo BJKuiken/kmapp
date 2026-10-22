@@ -80,19 +80,11 @@ def save_km():
 
 
 # -----------------------------
-# LOKAAL TESTEN
+# DATABASE DOWNLOADEN
 # -----------------------------
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-
-# -----------------------------
-# Downloaden van de database
-# -----------------------------
-
-
 @app.route("/download-db")
 def download_db():
-    db_path = "km.db"
+    db_path = "km.db"   # <-- correcte naam
     if not os.path.exists(db_path):
         return {"status": "error", "message": "Database bestaat niet"}, 404
 
@@ -101,3 +93,10 @@ def download_db():
         path=db_path,
         as_attachment=True
     )
+
+
+# -----------------------------
+# LOKAAL TESTEN
+# -----------------------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
