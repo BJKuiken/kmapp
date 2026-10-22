@@ -54,9 +54,12 @@
 
     <button type="submit">Opslaan</button>
 
-<a href="/download-db" style="display:block;margin-top:20px;font-size:18px;">
-    Download database
 </a>
+
+<button onclick="window.location.href='/download-db'"
+        style="margin-top:30px; padding:16px; width:100%; background:#333; color:white; font-size:18px; border:none; border-radius:8px;">
+    Download database (km.db)
+</button>
 
 </form>
 
@@ -96,6 +99,12 @@ document.getElementById("kmForm").addEventListener("submit", async (e) => {
     alert(response.ok ? "Rit opgeslagen!" : "Fout bij opslaan.");
 });
 </script>
+
+<button onclick="window.location.href='/download-db'"
+        style="margin-top:30px; padding:16px; width:100%; background:#333; color:white; font-size:18px; border:none; border-radius:8px;">
+    Download database (km.db)
+</button>
+
 
 </body>
 </html>

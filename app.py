@@ -84,3 +84,20 @@ def save_km():
 # -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+# -----------------------------
+# Downloaden van de database
+# -----------------------------
+
+
+@app.route("/download-db")
+def download_db():
+    db_path = "km.db"
+    if not os.path.exists(db_path):
+        return {"status": "error", "message": "Database bestaat niet"}, 404
+
+    return send_from_directory(
+        directory=".",
+        path=db_path,
+        as_attachment=True
+    )
