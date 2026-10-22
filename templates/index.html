@@ -11,9 +11,16 @@
 
         label { font-size: 16px; margin-top: 15px; display: block; }
 
+        .field-line {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 6px;
+        }
+
         .field-wrapper {
             position: relative;
-            margin-top: 6px;
+            flex: 1;
         }
 
         input {
@@ -36,11 +43,14 @@
             color: #333;
         }
 
-        /* Extra veld rechts van eindstand */
-        .km-plus-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        .quick-small {
+            padding: 10px 14px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            flex: 0 0 auto;
         }
 
         .km-plus {
@@ -54,10 +64,11 @@
         .btn-row { display: flex; gap: 10px; margin-top: 10px; }
         .quick-btn { flex: 1; padding: 12px; background: #333; color: white; border: none; border-radius: 8px; font-size: 14px; }
 
-        button[type="submit"] {
-            width: 100%;
+        .submit-row { display: flex; gap: 10px; margin-top: 25px; }
+
+        .submit-btn, .clear-btn {
+            flex: 1;
             padding: 16px;
-            margin-top: 25px;
             background: #333;
             color: white;
             font-size: 18px;
@@ -83,35 +94,38 @@
 
 <form id="kmForm">
 
+    <!-- DATUM -->
     <label>Datum</label>
     <input type="date" id="datum" name="datum" required>
 
+    <!-- BEGINSTAND -->
     <label>Beginstand (km)</label>
-    <div class="field-wrapper">
-        <input type="number" id="begin" name="begin" required>
-        <button type="button" class="star-btn" onclick="fillLocation('begin')">⭐</button>
-    </div>
+    <input type="number" id="begin" name="begin" required>
 
+    <!-- EINDSTAND + KM+ -->
     <label>Eindstand (km)</label>
-    <div class="km-plus-wrapper">
-        <div class="field-wrapper" style="flex:1;">
-            <input type="number" id="eind" name="eind" required>
-            <button type="button" class="star-btn" onclick="fillLocation('eind')">⭐</button>
-        </div>
-
+    <div class="field-line">
+        <input type="number" id="eind" name="eind" required>
         <input type="number" id="pluskm" class="km-plus" placeholder="+km">
     </div>
 
+    <!-- VAN -->
     <label>Van</label>
-    <div class="field-wrapper">
-        <input type="text" id="van" name="van" value="Zwartsluis" required>
-        <button type="button" class="star-btn" onclick="fillLocation('van')">⭐</button>
+    <div class="field-line">
+        <div class="field-wrapper">
+            <input type="text" id="van" name="van" required>
+            <button type="button" class="star-btn" onclick="fillLocation('van')">⭐</button>
+        </div>
+        <button type="button" class="quick-small" onclick="document.getElementById('van').value='Zwartsluis'">Zwartsluis</button>
     </div>
 
+    <!-- VIA -->
     <label>Via</label>
-    <div class="field-wrapper">
-        <input type="text" id="via" name="via" placeholder="Via (optioneel)">
-        <button type="button" class="star-btn" onclick="fillLocation('via')">⭐</button>
+    <div class="field-line">
+        <div class="field-wrapper">
+            <input type="text" id="via" name="via" placeholder="Via (optioneel)">
+            <button type="button" class="star-btn" onclick="fillLocation('via')">⭐</button>
+        </div>
     </div>
 
     <div class="btn-row">
@@ -119,12 +133,17 @@
         <button type="button" class="quick-btn" onclick="setVia('Heerde')">Heerde</button>
     </div>
 
+    <!-- NAAR -->
     <label>Naar</label>
-    <div class="field-wrapper">
-        <input type="text" id="naar" name="naar" value="Zwartsluis" required>
-        <button type="button" class="star-btn" onclick="fillLocation('naar')">⭐</button>
+    <div class="field-line">
+        <div class="field-wrapper">
+            <input type="text" id="naar" name="naar" required>
+            <button type="button" class="star-btn" onclick="fillLocation('naar')">⭐</button>
+        </div>
+        <button type="button" class="quick-small" onclick="document.getElementById('naar').value='Zwartsluis'">Zwartsluis</button>
     </div>
 
+    <!-- REDEN -->
     <label>Reden / Bestemming</label>
     <input type="text" id="reden" name="reden" required>
 
@@ -134,7 +153,12 @@
         <button type="button" class="quick-btn" onclick="setReason('Privé')">Privé</button>
     </div>
 
-    <button type="submit">Opslaan</button>
+    <!-- OPSLAAN + LEEGMAKEN -->
+    <div class="submit-row">
+        <button type="submit" class="submit-btn">Opslaan</button>
+        <button type="button" class="clear-btn" onclick="clearForm()">Leegmaken</button>
+    </div>
+
 </form>
 
 <button class="download-btn" onclick="window.location.href='/download-db'">
@@ -145,46 +169,35 @@
 // Datum automatisch op vandaag
 document.getElementById("datum").value = new Date().toISOString().split("T")[0];
 
-// ⭐ Beginstand automatisch vullen met laatste eindstand
+// Beginstand automatisch vullen met laatste eindstand
 async function loadLastKm() {
     const url = window.location.origin + "/api/lastkm";
     const res = await fetch(url);
     const data = await res.json();
-
-    if (data.lastkm) {
-        document.getElementById("begin").value = data.lastkm;
-    }
+    if (data.lastkm) document.getElementById("begin").value = data.lastkm;
 }
 loadLastKm();
 
-// ⭐ Locatie ophalen en invullen
+// Locatie invullen (alleen VAN, VIA, NAAR)
 function fillLocation(fieldId) {
-    if (!navigator.geolocation) {
-        alert("Locatie niet beschikbaar");
-        return;
-    }
+    if (!navigator.geolocation) return alert("Locatie niet beschikbaar");
 
-    navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
 
-            const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-            const data = await fetch(url).then(r => r.json());
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+        const data = await fetch(url).then(r => r.json());
 
-            const straat = data.address.road || "";
-            const nummer = data.address.house_number || "";
-            const plaats = data.address.city || data.address.town || data.address.village || "";
+        const straat = data.address.road || "";
+        const nummer = data.address.house_number || "";
+        const plaats = data.address.city || data.address.town || data.address.village || "";
 
-            const tekst = `${straat} ${nummer}, ${plaats}`;
-
-            document.getElementById(fieldId).value = tekst;
-        },
-        () => alert("Kon locatie niet ophalen")
-    );
+        document.getElementById(fieldId).value = `${straat} ${nummer}, ${plaats}`;
+    });
 }
 
-// ⭐ Via-knoppen vullen + eindstand berekenen
+// Via-knoppen
 function setVia(text) {
     document.getElementById("via").value = text;
     const begin = Number(document.getElementById("begin").value);
@@ -193,28 +206,38 @@ function setVia(text) {
     }
 }
 
-// ⭐ Reden-knoppen vullen
+// Reden-knoppen
 function setReason(text) {
     document.getElementById("reden").value = text;
 }
 
-// ⭐ Automatisch eindstand berekenen bij +km
+// +km berekening
 document.getElementById("pluskm").addEventListener("input", () => {
     const begin = Number(document.getElementById("begin").value);
     const plus = Number(document.getElementById("pluskm").value);
-
     if (!isNaN(begin) && !isNaN(plus)) {
         document.getElementById("eind").value = begin + plus;
     }
 });
 
-// ⭐ Formulier versturen
+// Formulier leegmaken
+function clearForm() {
+    document.getElementById("datum").value = new Date().toISOString().split("T")[0];
+    document.getElementById("van").value = "";
+    document.getElementById("via").value = "";
+    document.getElementById("naar").value = "";
+    document.getElementById("reden").value = "";
+    document.getElementById("pluskm").value = "";
+    document.getElementById("eind").value = "";
+    loadLastKm();
+}
+
+// Opslaan
 document.getElementById("kmForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
 
     const apiUrl = window.location.origin + "/api/km";
-
     const response = await fetch(apiUrl, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
