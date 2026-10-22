@@ -80,6 +80,25 @@ def save_km():
 
 
 # -----------------------------
+# laatste km stand als start volgende keer
+# -----------------------------
+
+
+@app.route("/api/lastkm")
+def last_km():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT eind FROM ritten ORDER BY id DESC LIMIT 1")
+    row = c.fetchone()
+    conn.close()
+
+    if row:
+        return {"lastkm": row[0]}
+    else:
+        return {"lastkm": None}
+
+
+# -----------------------------
 # DATABASE DOWNLOADEN
 # -----------------------------
 @app.route("/download-db")
